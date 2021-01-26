@@ -5,7 +5,7 @@ const customThisTabStorageEventName = 'this-tab-storage'
 
 type StateOrFunction<T> = T | ((value?: T) => T)
 
-export const usePersistedState = <State>(
+export const useStorageBackedState = <State>(
 	initialState: StateOrFunction<State>,
 	key: string,
 	storage = localStorage // localStorage nebo sessionStorage
@@ -68,7 +68,7 @@ export const usePersistedState = <State>(
 	// Funkce pro změnu stavu, která ukládá do localStorage a doupozorní všechny komponenty, že se stav změnil
 	const setState = useCallback(
 		(value: StateOrFunction<State>) => {
-			// Stejně jako useState i usePersistedState podporuje ve value funkci pro práci s předchozí hodnotou
+			// Stejně jako useState i useStorageBackedState podporuje ve value funkci pro práci s předchozí hodnotou
 			const valueToStore = JSON.stringify(
 				value instanceof Function ? value(state) : value
 			)

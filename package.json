@@ -1,7 +1,7 @@
 {
-	"name": "@onset/use-persisted-state",
+	"name": "use-storage-backed-state",
 	"version": "0.0.1",
-	"description": "Custom React hook for persisted state.",
+	"description": "Custom React hook for storage backed persisted state.",
 	"main": "./dist/index.js",
 	"module": "./dist/index.es.js",
 	"types": "./dist/index.d.ts",
@@ -12,7 +12,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/FilipChalupa/use-persisted-state.git"
+		"url": "https://github.com/FilipChalupa/use-storage-backed-state.git"
 	},
 	"keywords": [
 		"react",

@@ -1,9 +1,9 @@
 # usePersistedState
 
-Custom React hook for persisted state.
+Custom React hook for storage backed persisted state.
 
 ## Installation
 
 ```bash
-npm install @onset/use-persisted-state
+npm install use-storage-backed-state
 ```
