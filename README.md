@@ -1,4 +1,4 @@
-# usePersistedState
+# useStorageBackedState
 
 Custom React hook for storage backed persisted state.
 
