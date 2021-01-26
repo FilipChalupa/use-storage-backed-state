@@ -7,3 +7,38 @@ Custom React hook for storage backed persisted state.
 ```bash
 npm install use-storage-backed-state
 ```
+
+## How to use
+
+```jsx
+import React from 'react'
+import { useStorageBackedState } from 'use-storage-backed-state'
+
+export const MyComponent = () => {
+	// 0: initialState
+	// 'count': localStorage key
+	const [count, setCount] = useStorageBackedState(0, 'count')
+
+	return (
+		<section>
+			<h1>
+				Value: <output>{count}</output>
+			</h1>
+			<button onClick={() => setCount(count + 1)}>increment</button>
+			<button onClick={() => setCount(count - 1)}>decrement</button>
+		</section>
+	)
+}
+```
+
+![example](https://raw.githubusercontent.com/FilipChalupa/use-storage-backed-state/HEAD/screencast.gif)
+
+## Notes
+
+- Works with `sessionStorage` too.
+
+  ```jsx
+  useStorageBackedState(…, …, sessionStorage)
+  ```
+
+- Realtime synchronization between multiple uses with the same `key`. Even across tabs.
