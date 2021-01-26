@@ -35,6 +35,8 @@ export const MyComponent = () => {
 
 ## Notes
 
+- Stored data in `localStorage`.
+
 - Works with `sessionStorage` too.
 
   ```jsx
