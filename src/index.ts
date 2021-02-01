@@ -8,9 +8,14 @@ type StateOrFunction<T> = T | ((value?: T) => T)
 export const useStorageBackedState = <State>(
 	initialState: StateOrFunction<State>,
 	key: string,
-	storage = localStorage // localStorage nebo sessionStorage
+	storage = 'localStorage' in globalThis ? localStorage : undefined // localStorage nebo sessionStorage
 ): [State, (value: State) => void] => {
-	const localInitialState = useMemo(
+	if (!storage) {
+		const [state, setState] = useState(initialState)
+		return [state, setState]
+	}
+
+	const localInitialState: State = useMemo(
 		() =>
 			initialState instanceof Function ? initialState(state) : initialState,
 		[initialState]
@@ -25,7 +30,7 @@ export const useStorageBackedState = <State>(
 				? localInitialState(state)
 				: localInitialState
 		)
-	)
+	) as [string, React.Dispatch<React.SetStateAction<string>>]
 
 	// Při prvním renderu komponenty přidá posluchače událostí
 	useEffect(() => {
@@ -101,7 +106,7 @@ const loadJSON = <State>(
 }
 
 // Vrací počáteční hodnotu, pokud jsou data prázdná
-const missingDataCheck = <State>(data: string, fallbackState: State) => {
+const missingDataCheck = <State>(data: string | null, fallbackState: State) => {
 	// Data se rovnají null, pokud v localStorage ještě žádná nejsou
 	if (data === null) {
 		return JSON.stringify(fallbackState)
