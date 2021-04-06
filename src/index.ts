@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 // @TODO: register CustomEvent on window type
 const customThisTabStorageEventName = 'this-tab-storage'
@@ -14,6 +14,12 @@ export const useStorageBackedState = <State>(
 		const [state, setState] = useState(initialState)
 		return [state, setState]
 	}
+
+	// Řeší první render na clientu po SSR
+	const [isFirstRender, setIsFirstRender] = useState(true)
+	useEffect(() => {
+		setIsFirstRender(false)
+	}, [])
 
 	const localInitialState: State = useMemo(
 		() =>
@@ -58,17 +64,21 @@ export const useStorageBackedState = <State>(
 
 	// Do proměnné state vytáhneme data z localStorage. Pomocí hooku useMemo optimalizujeme výkon a data zpracováváme pouze v případě, že jsou jiné než při předchozím renderu
 	const state = useMemo((): State => {
-		// Pomocí try a catch zkusíme převést data z jsonu do původní struktury
-		try {
-			return JSON.parse(rawState)
-		} catch (error) {
-			// Pokud se převod nepovede, zapíšeme do konzole, že data jsou ve špatném formátu
-			console.error('Corrupted localStorage data. Falling back to initialState')
-			console.error(error)
+		if (isFirstRender === false) {
+			// Pomocí try a catch zkusíme převést data z jsonu do původní struktury
+			try {
+				return JSON.parse(rawState)
+			} catch (error) {
+				// Pokud se převod nepovede, zapíšeme do konzole, že data jsou ve špatném formátu
+				console.error(
+					'Corrupted localStorage data. Falling back to initialState'
+				)
+				console.error(error)
+			}
 		}
-		// Vrátíme počáteční data, pokud selhal převod z jsonu
+		// Vrátíme počáteční data, pokud selhal převod z jsonu nebo poprvé renderujeme
 		return localInitialState
-	}, [rawState])
+	}, [rawState, isFirstRender])
 
 	// Funkce pro změnu stavu, která ukládá do localStorage a doupozorní všechny komponenty, že se stav změnil
 	const setState = useCallback(
