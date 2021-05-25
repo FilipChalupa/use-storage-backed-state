@@ -35,7 +35,7 @@ export const MyComponent = () => {
 
 ## Notes
 
-- Stored data in `localStorage`.
+- Stores data in `localStorage`.
 
 - Works with `sessionStorage` too.
 
