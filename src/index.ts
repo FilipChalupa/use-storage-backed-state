@@ -1,134 +1,73 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useSyncExternalStore } from 'react'
 
-// @TODO: register CustomEvent on window type
+// @TODO: allow initial value as function
+// @TODO: don't overuse CustomEvent - it is unnecessary window spam
+
 const customThisTabStorageEventName = 'this-tab-storage'
 
-type StateOrFunction<T> = T | ((value?: T) => T)
-
-export const useStorageBackedState = <State>(
-	initialState: StateOrFunction<State>,
+export const useStorageBackedState = <T>(
+	initialValue: T,
 	key: string,
-	storage = 'localStorage' in globalThis ? localStorage : undefined // localStorage nebo sessionStorage
-): [State, (value: State) => void] => {
-	if (!storage) {
-		const [state, setState] = useState(initialState)
-		return [state, setState]
-	}
-
-	// Řeší první render na clientu po SSR
-	const [isFirstRender, setIsFirstRender] = useState(true)
-	useEffect(() => {
-		setIsFirstRender(false)
-	}, [])
-
-	const localInitialState: State = useMemo(
-		() =>
-			initialState instanceof Function ? initialState(state) : initialState,
-		[initialState]
+	storage = 'localStorage' in globalThis ? localStorage : undefined
+) => {
+	const subscribe = useCallback(
+		(onStoreChange: () => void) => {
+			const handleCustomEvent = (event: Event) => {
+				if (event instanceof CustomEvent && event.detail.key === key) {
+					onStoreChange()
+				}
+			}
+			window.addEventListener('storage', onStoreChange)
+			window.addEventListener(customThisTabStorageEventName, handleCustomEvent)
+			return () => {
+				window.removeEventListener('storage', onStoreChange)
+				window.removeEventListener(
+					customThisTabStorageEventName,
+					handleCustomEvent
+				)
+			}
+		},
+		[key]
+	)
+	const getSnapshot = useCallback(() => {
+		if (!storage) {
+			throw new Error('Storage not available')
+		}
+		const value = storage.getItem(key)
+		if (value === null) {
+			return initialValue
+		}
+		try {
+			return JSON.parse(value) as T // @TODO: validate data in storage
+		} catch (error) {
+			console.error('Corrupted storage data. Falling back to initialState')
+			console.error(error)
+		}
+		return initialValue
+	}, [initialValue, key, storage])
+	const getServerSnapshot = useCallback(() => initialValue, [initialValue])
+	const value = useSyncExternalStore<T>(
+		subscribe,
+		getSnapshot,
+		getServerSnapshot
 	)
 
-	// Přichystá interní stav. Pokud je to potřeba, načte poslední hodnotu z localStorage nebo použije dodanou v proměnné initialState
-	const [rawState, setRawState] = useState(() =>
-		loadJSON(
-			storage,
-			key,
-			localInitialState instanceof Function
-				? localInitialState(state)
-				: localInitialState
-		)
-	) as [string, React.Dispatch<React.SetStateAction<string>>]
-
-	// Při prvním renderu komponenty přidá posluchače událostí
-	useEffect(() => {
-		// Funkce pro zpracování události změny v localStorage
-		const onChange = (event: Event) => {
-			// Vyjmeme z události klíč pro data a novou hodnotu dat
-			const { key: eventKey, newValue }: { key: string; newValue: string } =
-				event instanceof CustomEvent ? event.detail : event
-			// Zkontrolujeme, jestli se změnily data, která nás zajímají
-			if (eventKey === key) {
-				setRawState(missingDataCheck(newValue, localInitialState))
+	const setValue = useCallback(
+		(newValue: T /* @TODO: allow function */) => {
+			if (!storage) {
+				throw new Error('Storage not available')
 			}
-		}
-
-		// Přidání posluchaču
-		window.addEventListener('storage', onChange)
-		window.addEventListener(customThisTabStorageEventName, onChange)
-
-		// Odebrání posluchačů po odebrání komponenty ze stránky
-		return () => {
-			window.removeEventListener('storage', onChange)
-			window.removeEventListener(customThisTabStorageEventName, onChange)
-		}
-	}, [key, storage])
-
-	// Do proměnné state vytáhneme data z localStorage. Pomocí hooku useMemo optimalizujeme výkon a data zpracováváme pouze v případě, že jsou jiné než při předchozím renderu
-	const state = useMemo((): State => {
-		if (isFirstRender === false) {
-			// Pomocí try a catch zkusíme převést data z jsonu do původní struktury
-			try {
-				return JSON.parse(rawState)
-			} catch (error) {
-				// Pokud se převod nepovede, zapíšeme do konzole, že data jsou ve špatném formátu
-				console.error(
-					'Corrupted localStorage data. Falling back to initialState'
-				)
-				console.error(error)
-			}
-		}
-		// Vrátíme počáteční data, pokud selhal převod z jsonu nebo poprvé renderujeme
-		return localInitialState
-	}, [rawState, isFirstRender])
-
-	// Funkce pro změnu stavu, která ukládá do localStorage a doupozorní všechny komponenty, že se stav změnil
-	const setState = useCallback(
-		(value: StateOrFunction<State>) => {
-			// Stejně jako useState i useStorageBackedState podporuje ve value funkci pro práci s předchozí hodnotou
-			const valueToStore = JSON.stringify(
-				value instanceof Function ? value(state) : value
-			)
-			// V localStorage můžou být jako hodnoty jen řetězce. Proto převedeme data (value) do jsonu
-			saveJSON(storage, key, valueToStore)
-			// Uložení do localStorage upozorňuje jen ostatní taby. Vytvoříme vlastní událost, která upozorní i tab, ve kterém zrovna jsme
+			storage.setItem(key, JSON.stringify(newValue))
 			window.dispatchEvent(
 				new CustomEvent(customThisTabStorageEventName, {
 					detail: {
 						key,
-						newValue: valueToStore,
 					},
 				})
 			)
 		},
-		[key, state, storage]
+		[key, storage]
 	)
 
-	return [state, setState]
-}
-
-// Funkce pro čtení z localStorage. Vrací počáteční hodnotu, pokud v localStorage pod daným klíčem ještě nejsou žádná data
-const loadJSON = <State>(
-	storage: Storage,
-	key: string,
-	fallbackState: State
-) => {
-	const data = storage.getItem(key)
-	return missingDataCheck(data, fallbackState)
-}
-
-// Vrací počáteční hodnotu, pokud jsou data prázdná
-const missingDataCheck = <State>(data: string | null, fallbackState: State) => {
-	// Data se rovnají null, pokud v localStorage ještě žádná nejsou
-	if (data === null) {
-		return JSON.stringify(fallbackState)
-	}
-	return data
-}
-
-// Ukládá do localStorage
-const saveJSON = (storage: Storage, key: string, value: string) => {
-	try {
-		storage.setItem(key, value)
-	} catch (error) {
-		console.error(error)
-	}
+	return [value, setValue] as const
 }
