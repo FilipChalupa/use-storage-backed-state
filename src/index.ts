@@ -5,8 +5,13 @@ import { useCallback, useSyncExternalStore } from 'react'
 
 const customThisTabStorageEventName = 'this-tab-storage'
 
+type StateOrFunction<T> = T | ((value?: T) => T)
+
+const stateOrFunctionToState = <T>(initialState: StateOrFunction<T>) =>
+	initialState instanceof Function ? initialState() : initialState
+
 export const useStorageBackedState = <T>(
-	initialValue: T,
+	initialValue: StateOrFunction<T>,
 	key: string,
 	storage = 'localStorage' in globalThis ? localStorage : undefined
 ) => {
@@ -35,7 +40,7 @@ export const useStorageBackedState = <T>(
 		}
 		const value = storage.getItem(key)
 		if (value === null) {
-			return initialValue
+			return stateOrFunctionToState(initialValue)
 		}
 		try {
 			return JSON.parse(value) as T // @TODO: validate data in storage
@@ -43,9 +48,12 @@ export const useStorageBackedState = <T>(
 			console.error('Corrupted storage data. Falling back to initialState')
 			console.error(error)
 		}
-		return initialValue
+		return stateOrFunctionToState(initialValue)
 	}, [initialValue, key, storage])
-	const getServerSnapshot = useCallback(() => initialValue, [initialValue])
+	const getServerSnapshot = useCallback(
+		() => stateOrFunctionToState(initialValue),
+		[initialValue]
+	)
 	const value = useSyncExternalStore<T>(
 		subscribe,
 		getSnapshot,
@@ -53,11 +61,16 @@ export const useStorageBackedState = <T>(
 	)
 
 	const setValue = useCallback(
-		(newValue: T /* @TODO: allow function */) => {
+		(newValue: T | ((oldValue: T) => T)) => {
 			if (!storage) {
 				throw new Error('Storage not available')
 			}
-			storage.setItem(key, JSON.stringify(newValue))
+			storage.setItem(
+				key,
+				JSON.stringify(
+					newValue instanceof Function ? newValue(value) : newValue
+				)
+			)
 			window.dispatchEvent(
 				new CustomEvent(customThisTabStorageEventName, {
 					detail: {
@@ -66,7 +79,7 @@ export const useStorageBackedState = <T>(
 				})
 			)
 		},
-		[key, storage]
+		[key, storage, value]
 	)
 
 	return [value, setValue] as const
