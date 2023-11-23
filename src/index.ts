@@ -1,4 +1,4 @@
-import { useCallback, useSyncExternalStore } from 'react'
+import { useCallback, useRef, useSyncExternalStore } from 'react'
 
 // @TODO: allow initial value as function
 // @TODO: don't overuse CustomEvent - it is unnecessary window spam
@@ -60,6 +60,8 @@ export const useStorageBackedState = <T>(
 		getServerSnapshot
 	)
 
+	const valueRef = useRef(value)
+	valueRef.current = value
 	const setValue = useCallback(
 		(newValue: T | ((oldValue: T) => T)) => {
 			if (!storage) {
@@ -68,7 +70,7 @@ export const useStorageBackedState = <T>(
 			storage.setItem(
 				key,
 				JSON.stringify(
-					newValue instanceof Function ? newValue(value) : newValue
+					newValue instanceof Function ? newValue(valueRef.current) : newValue
 				)
 			)
 			window.dispatchEvent(
@@ -79,7 +81,7 @@ export const useStorageBackedState = <T>(
 				})
 			)
 		},
-		[key, storage, value]
+		[key, storage]
 	)
 
 	return [value, setValue] as const
