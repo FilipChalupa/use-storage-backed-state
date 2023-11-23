@@ -1,4 +1,4 @@
-import { useCallback, useRef, useSyncExternalStore } from 'react'
+import { useCallback, useMemo, useRef, useSyncExternalStore } from 'react'
 
 // @TODO: allow initial value as function
 // @TODO: don't overuse CustomEvent - it is unnecessary window spam
@@ -34,21 +34,37 @@ export const useStorageBackedState = <T>(
 		},
 		[key]
 	)
-	const getSnapshot = useCallback(() => {
-		if (!storage) {
-			throw new Error('Storage not available')
+	const getSnapshot = useMemo(() => {
+		const initialValueCached = stateOrFunctionToState(initialValue)
+		const cache: {
+			rawValue: string | null
+			value: T
+		} = {
+			rawValue: null,
+			value: initialValueCached,
 		}
-		const value = storage.getItem(key)
-		if (value === null) {
-			return stateOrFunctionToState(initialValue)
+		return () => {
+			if (!storage) {
+				throw new Error('Storage not available')
+			}
+			const rawValue = storage.getItem(key)
+			if (rawValue === null) {
+				return initialValueCached
+			}
+			if (cache.rawValue === rawValue) {
+				return cache.value
+			}
+			try {
+				const value = JSON.parse(rawValue) as T // @TODO: validate data in storage
+				cache.rawValue = rawValue
+				cache.value = value
+				return value
+			} catch (error) {
+				console.error('Corrupted storage data. Falling back to initialState')
+				console.error(error)
+			}
+			return initialValueCached
 		}
-		try {
-			return JSON.parse(value) as T // @TODO: validate data in storage
-		} catch (error) {
-			console.error('Corrupted storage data. Falling back to initialState')
-			console.error(error)
-		}
-		return stateOrFunctionToState(initialValue)
 	}, [initialValue, key, storage])
 	const getServerSnapshot = useCallback(
 		() => stateOrFunctionToState(initialValue),
