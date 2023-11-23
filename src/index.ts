@@ -66,10 +66,10 @@ export const useStorageBackedState = <T>(
 			return initialValueCached
 		}
 	}, [initialValue, key, storage])
-	const getServerSnapshot = useCallback(
-		() => stateOrFunctionToState(initialValue),
-		[initialValue]
-	)
+	const getServerSnapshot = useMemo(() => {
+		const initialValueCached = stateOrFunctionToState(initialValue)
+		return () => initialValueCached
+	}, [initialValue])
 	const value = useSyncExternalStore<T>(
 		subscribe,
 		getSnapshot,
