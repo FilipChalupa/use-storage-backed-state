@@ -16,34 +16,33 @@ export const useStorageBackedState = <T>(
 	key: string | null = null,
 	storage: Storage | null | undefined = 'localStorage' in globalThis ? localStorage : null,
 ) => {
+	const trulyInitialValue = useRef(stateOrFunctionToState(initialValue)).current
 	const inMemoryStorage = useMemo(() => {
-		const initialValueCached = stateOrFunctionToState(initialValue)
-		let value = initialValueCached
+		let value = trulyInitialValue
 		return {
 			get: () => value,
 			set: (newValue: T) => {
 				value = newValue
 			},
 		}
-	}, [initialValue])
+	}, [trulyInitialValue])
 	const internalStorage = useMemo(() => {
 		const core: { get: () => T; set: (newValue: T) => void } = (() => {
 			if (key === null || storage === null || storage === undefined) {
 				return inMemoryStorage
 			}
-			const initialValueCached = stateOrFunctionToState(initialValue)
 			const cache: {
 				rawValue: string | null
 				value: T
 			} = {
 				rawValue: null,
-				value: initialValueCached,
+				value: trulyInitialValue,
 			}
 			return {
 				get: () => {
 					const rawValue = storage.getItem(key)
 					if (rawValue === null) {
-						return initialValueCached
+						return trulyInitialValue
 					}
 					if (cache.rawValue === rawValue) {
 						return cache.value
@@ -57,7 +56,7 @@ export const useStorageBackedState = <T>(
 						console.error('Corrupted storage data. Falling back to initialState.')
 						console.error(error)
 					}
-					return initialValueCached
+					return trulyInitialValue
 				},
 				set: newValue => storage.setItem(key, JSON.stringify(newValue)),
 			}
@@ -83,13 +82,10 @@ export const useStorageBackedState = <T>(
 			changeListenable.emit()
 		}
 		return { get: core.get, set, listen }
-	}, [key, storage, initialValue, inMemoryStorage])
+	}, [key, storage, trulyInitialValue, inMemoryStorage])
 	const subscribe = useCallback((onStoreChange: () => void) => internalStorage.listen(onStoreChange), [internalStorage])
 	const getSnapshot = useCallback(() => internalStorage.get(), [internalStorage])
-	const getServerSnapshot = useMemo(() => {
-		const initialValueCached = stateOrFunctionToState(initialValue)
-		return () => initialValueCached
-	}, [initialValue])
+	const getServerSnapshot = useCallback(() => trulyInitialValue, [trulyInitialValue])
 	const value = useSyncExternalStore<T>(subscribe, getSnapshot, getServerSnapshot)
 
 	const valueRef = useRef(value)
