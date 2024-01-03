@@ -13,14 +13,15 @@ const stateOrFunctionToState = <T>(initialState: StateOrFunction<T>) =>
 export const useStorageBackedState = <T>(
 	initialValue: StateOrFunction<T>,
 	key: string | null = null,
-	storage = 'localStorage' in globalThis ? localStorage : undefined
+	storage: Storage | null = 'localStorage' in globalThis ? localStorage : null
 ) => {
 	const internalStorage = useMemo<{
-		get: () => null | string
-		set: (newValue: string) => void
+		get: () => T
+		set: (newValue: T) => void
 	}>(() => {
-		if (key === null || storage === undefined) {
-			let value: string | null = null
+		const initialValueCached = stateOrFunctionToState(initialValue)
+		if (key === null || storage === null) {
+			let value = initialValueCached
 			return {
 				get: () => value,
 				set: (newValue) => {
@@ -28,11 +29,36 @@ export const useStorageBackedState = <T>(
 				},
 			}
 		}
-		return {
-			get: () => storage.getItem(key),
-			set: (newValue) => storage.setItem(key, newValue),
+		const cache: {
+			rawValue: string | null
+			value: T
+		} = {
+			rawValue: null,
+			value: initialValueCached,
 		}
-	}, [storage, key])
+		return {
+			get: () => {
+				const rawValue = storage.getItem(key)
+				if (rawValue === null) {
+					return initialValueCached
+				}
+				if (cache.rawValue === rawValue) {
+					return cache.value
+				}
+				try {
+					const value = JSON.parse(rawValue) as T // @TODO: validate data in storage
+					cache.rawValue = rawValue
+					cache.value = value
+					return value
+				} catch (error) {
+					console.error('Corrupted storage data. Falling back to initialState.')
+					console.error(error)
+				}
+				return initialValueCached
+			},
+			set: (newValue) => storage.setItem(key, JSON.stringify(newValue)),
+		}
+	}, [key, storage, initialValue])
 	const subscribe = useCallback(
 		(onStoreChange: () => void) => {
 			const handleCustomEvent = (event: Event) => {
@@ -52,35 +78,9 @@ export const useStorageBackedState = <T>(
 		},
 		[key]
 	)
-	const getSnapshot = useMemo(() => {
-		const initialValueCached = stateOrFunctionToState(initialValue)
-		const cache: {
-			rawValue: string | null
-			value: T
-		} = {
-			rawValue: null,
-			value: initialValueCached,
-		}
-		return () => {
-			const rawValue = internalStorage.get()
-			if (rawValue === null) {
-				return initialValueCached
-			}
-			if (cache.rawValue === rawValue) {
-				return cache.value
-			}
-			try {
-				const value = JSON.parse(rawValue) as T // @TODO: validate data in storage
-				cache.rawValue = rawValue
-				cache.value = value
-				return value
-			} catch (error) {
-				console.error('Corrupted storage data. Falling back to initialState')
-				console.error(error)
-			}
-			return initialValueCached
-		}
-	}, [initialValue, internalStorage])
+	const getSnapshot = useCallback(() => internalStorage.get(), [
+		internalStorage,
+	])
 	const getServerSnapshot = useMemo(() => {
 		const initialValueCached = stateOrFunctionToState(initialValue)
 		return () => initialValueCached
@@ -96,9 +96,7 @@ export const useStorageBackedState = <T>(
 	const setValue = useCallback(
 		(newValue: T | ((oldValue: T) => T)) => {
 			internalStorage.set(
-				JSON.stringify(
-					newValue instanceof Function ? newValue(valueRef.current) : newValue
-				)
+				newValue instanceof Function ? newValue(valueRef.current) : newValue
 			)
 			window.dispatchEvent(
 				new CustomEvent(customThisTabStorageEventName, {
