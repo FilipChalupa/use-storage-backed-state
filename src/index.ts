@@ -13,14 +13,16 @@ const stateOrFunctionToState = <T>(initialState: StateOrFunction<T>) =>
 export const useStorageBackedState = <T>(
 	initialValue: StateOrFunction<T>,
 	key: string | null = null,
-	storage: Storage | null = 'localStorage' in globalThis ? localStorage : null
+	storage: Storage | null | undefined = 'localStorage' in globalThis
+		? localStorage
+		: null
 ) => {
 	const internalStorage = useMemo<{
 		get: () => T
 		set: (newValue: T) => void
 	}>(() => {
 		const initialValueCached = stateOrFunctionToState(initialValue)
-		if (key === null || storage === null) {
+		if (key === null || storage === null || storage === undefined) {
 			let value = initialValueCached
 			return {
 				get: () => value,
