@@ -1,8 +1,6 @@
 import { listenable } from 'custom-listenable'
 import { useCallback, useMemo, useRef, useSyncExternalStore } from 'react'
 
-// @TODO: allow initial value as function
-// @TODO: don't overuse CustomEvent - it is unnecessary window spam
 // @TODO: when transitioning from localStorage to in-memory storage, use last stored value
 
 type StateOrFunction<T> = T | ((value?: T) => T)
