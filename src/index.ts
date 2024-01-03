@@ -1,22 +1,17 @@
 import { listenable } from 'custom-listenable'
-import { useCallback, useMemo, useRef, useSyncExternalStore } from 'react'
+import { useCallback, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 
 // @TODO: when transitioning from localStorage to in-memory storage, use last stored value
-
-type StateOrFunction<T> = T | ((value?: T) => T)
-
-const stateOrFunctionToState = <T>(initialState: StateOrFunction<T>) =>
-	initialState instanceof Function ? initialState() : initialState
 
 type ChangeListenable = ReturnType<typeof listenable<void>>
 const changeListenables = new Map<string, ChangeListenable>()
 
 export const useStorageBackedState = <T>(
-	initialValue: StateOrFunction<T>,
+	initialValue: T | (() => T),
 	key: string | null = null,
 	storage: Storage | null | undefined = 'localStorage' in globalThis ? localStorage : null,
 ) => {
-	const trulyInitialValue = useRef(stateOrFunctionToState(initialValue)).current
+	const [trulyInitialValue] = useState(initialValue)
 	const inMemoryStorage = useMemo(() => {
 		let value = trulyInitialValue
 		return {
