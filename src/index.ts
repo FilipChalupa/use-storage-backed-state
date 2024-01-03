@@ -12,9 +12,27 @@ const stateOrFunctionToState = <T>(initialState: StateOrFunction<T>) =>
 
 export const useStorageBackedState = <T>(
 	initialValue: StateOrFunction<T>,
-	key: string,
+	key: string | null = null,
 	storage = 'localStorage' in globalThis ? localStorage : undefined
 ) => {
+	const internalStorage = useMemo<{
+		get: () => null | string
+		set: (newValue: string) => void
+	}>(() => {
+		if (key === null || storage === undefined) {
+			let value: string | null = null
+			return {
+				get: () => value,
+				set: (newValue) => {
+					value = newValue
+				},
+			}
+		}
+		return {
+			get: () => storage.getItem(key),
+			set: (newValue) => storage.setItem(key, newValue),
+		}
+	}, [storage, key])
 	const subscribe = useCallback(
 		(onStoreChange: () => void) => {
 			const handleCustomEvent = (event: Event) => {
@@ -44,10 +62,7 @@ export const useStorageBackedState = <T>(
 			value: initialValueCached,
 		}
 		return () => {
-			if (!storage) {
-				throw new Error('Storage not available')
-			}
-			const rawValue = storage.getItem(key)
+			const rawValue = internalStorage.get()
 			if (rawValue === null) {
 				return initialValueCached
 			}
@@ -65,7 +80,7 @@ export const useStorageBackedState = <T>(
 			}
 			return initialValueCached
 		}
-	}, [initialValue, key, storage])
+	}, [initialValue, internalStorage])
 	const getServerSnapshot = useMemo(() => {
 		const initialValueCached = stateOrFunctionToState(initialValue)
 		return () => initialValueCached
@@ -80,11 +95,7 @@ export const useStorageBackedState = <T>(
 	valueRef.current = value
 	const setValue = useCallback(
 		(newValue: T | ((oldValue: T) => T)) => {
-			if (!storage) {
-				throw new Error('Storage not available')
-			}
-			storage.setItem(
-				key,
+			internalStorage.set(
 				JSON.stringify(
 					newValue instanceof Function ? newValue(valueRef.current) : newValue
 				)
@@ -97,7 +108,7 @@ export const useStorageBackedState = <T>(
 				})
 			)
 		},
-		[key, storage]
+		[key, internalStorage]
 	)
 
 	return [value, setValue] as const
