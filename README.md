@@ -24,8 +24,20 @@ export const MyComponent = () => {
 			<h1>
 				Value: <output>{count}</output>
 			</h1>
-			<button onClick={() => setCount(count + 1)}>increment</button>
-			<button onClick={() => setCount(count - 1)}>decrement</button>
+			<button
+				onClick={() => {
+					setCount(count + 1)
+				}}
+			>
+				increment
+			</button>
+			<button
+				onClick={() => {
+					setCount(count - 1)
+				}}
+			>
+				decrement
+			</button>
 		</section>
 	)
 }
@@ -44,3 +56,17 @@ export const MyComponent = () => {
   ```
 
 - Realtime synchronization between multiple uses with the same `key`. Even across tabs.
+
+- You can opt out from storage and synchronization by passing `null` as the second argument or by omitting the `key` altogether. `useStorageBackedState` will then behave similarly like `useState` in that case.
+
+  ```jsx
+  const [count, setCount] = useStorageBackedState(1)
+  ```
+
+  ```jsx
+  const [storeState, setStoreState] = useState(false)
+  const [count, setCount] = useStorageBackedState(
+  	1,
+  	storeState ? 'count' : null,
+  )
+  ```
