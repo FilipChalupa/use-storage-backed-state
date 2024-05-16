@@ -46,13 +46,6 @@
 	"peerDependencies": {
 		"react": "18"
 	},
-	"prettier": {
-		"semi": false,
-		"singleQuote": true,
-		"trailingComma": "all",
-		"useTabs": true,
-		"arrowParens": "always"
-	},
 	"files": [
 		"/dist/"
 	]
