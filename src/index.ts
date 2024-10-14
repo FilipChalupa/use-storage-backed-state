@@ -1,5 +1,11 @@
 import { listenable } from 'custom-listenable'
-import { useCallback, useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import {
+	useCallback,
+	useMemo,
+	useRef,
+	useState,
+	useSyncExternalStore,
+} from 'react'
 
 // @TODO: when transitioning from localStorage to in-memory storage, use last stored value
 
@@ -9,7 +15,9 @@ const changeListenables = new Map<string, ChangeListenable>()
 export const useStorageBackedState = <T>(
 	initialValue: T | (() => T),
 	key: string | null = null,
-	storage: Storage | null | undefined = 'localStorage' in globalThis ? localStorage : null,
+	storage: Storage | null | undefined = 'localStorage' in globalThis
+		? localStorage
+		: null,
 ) => {
 	const [trulyInitialValue] = useState(initialValue)
 	const inMemoryStorage = useMemo(() => {
@@ -48,12 +56,14 @@ export const useStorageBackedState = <T>(
 						cache.value = value
 						return value
 					} catch (error) {
-						console.error('Corrupted storage data. Falling back to initialState.')
+						console.error(
+							'Corrupted storage data. Falling back to initialState.',
+						)
 						console.error(error)
 					}
 					return trulyInitialValue
 				},
-				set: newValue => storage.setItem(key, JSON.stringify(newValue)),
+				set: (newValue) => storage.setItem(key, JSON.stringify(newValue)),
 			}
 		})()
 		const changeListenable: ChangeListenable = (() => {
@@ -78,16 +88,31 @@ export const useStorageBackedState = <T>(
 		}
 		return { get: core.get, set, listen }
 	}, [key, storage, trulyInitialValue, inMemoryStorage])
-	const subscribe = useCallback((onStoreChange: () => void) => internalStorage.listen(onStoreChange), [internalStorage])
-	const getSnapshot = useCallback(() => internalStorage.get(), [internalStorage])
-	const getServerSnapshot = useCallback(() => trulyInitialValue, [trulyInitialValue])
-	const value = useSyncExternalStore<T>(subscribe, getSnapshot, getServerSnapshot)
+	const subscribe = useCallback(
+		(onStoreChange: () => void) => internalStorage.listen(onStoreChange),
+		[internalStorage],
+	)
+	const getSnapshot = useCallback(
+		() => internalStorage.get(),
+		[internalStorage],
+	)
+	const getServerSnapshot = useCallback(
+		() => trulyInitialValue,
+		[trulyInitialValue],
+	)
+	const value = useSyncExternalStore<T>(
+		subscribe,
+		getSnapshot,
+		getServerSnapshot,
+	)
 
 	const valueRef = useRef(value)
 	valueRef.current = value
 	const setValue = useCallback(
 		(newValue: T | ((oldValue: T) => T)) => {
-			internalStorage.set(newValue instanceof Function ? newValue(valueRef.current) : newValue)
+			internalStorage.set(
+				newValue instanceof Function ? newValue(valueRef.current) : newValue,
+			)
 		},
 		[internalStorage],
 	)
