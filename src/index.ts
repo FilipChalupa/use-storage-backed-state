@@ -51,7 +51,12 @@ export const useStorageBackedState = <T>(
 						return cache.value
 					}
 					try {
-						const value = JSON.parse(rawValue) as T // @TODO: validate data in storage
+						const value = (() => {
+							if (rawValue === 'undefined') {
+								return undefined
+							}
+							return JSON.parse(rawValue)
+						})() as T // @TODO: validate data in storage
 						cache.rawValue = rawValue
 						cache.value = value
 						return value
