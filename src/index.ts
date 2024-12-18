@@ -9,6 +9,9 @@ import {
 
 // @TODO: when transitioning from localStorage to in-memory storage, use last stored value
 
+// @TODO: add option to provide a custom serializer/deserializer
+// @TODO: add option to provide a custom data integrity checker
+
 type ChangeListenable = ReturnType<typeof listenable<void>>
 const changeListenables = new Map<string, ChangeListenable>()
 const createListener = (key: null | string) => {
