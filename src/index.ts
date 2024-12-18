@@ -25,7 +25,7 @@ const createListener = (key: null | string) => {
 	})()
 	const listen = (onChange: () => void) => {
 		changeListenable.addListener(onChange)
-		window.addEventListener('storage', onChange)
+		window.addEventListener('storage', onChange) // @TODO: check if the value for specific key has changed and not other
 		return {
 			unsubscribe: () => {
 				changeListenable.removeListener(onChange)
