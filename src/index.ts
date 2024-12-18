@@ -11,6 +11,33 @@ import {
 
 type ChangeListenable = ReturnType<typeof listenable<void>>
 const changeListenables = new Map<string, ChangeListenable>()
+const createListener = (key: null | string) => {
+	const changeListenable: ChangeListenable = (() => {
+		if (key === null) {
+			return listenable()
+		}
+		const result = changeListenables.get(key) ?? listenable()
+		changeListenables.set(key, result)
+		return result
+	})()
+	const listen = (onChange: () => void) => {
+		changeListenable.addListener(onChange)
+		window.addEventListener('storage', onChange)
+		return {
+			unsubscribe: () => {
+				changeListenable.removeListener(onChange)
+				window.removeEventListener('storage', onChange)
+			},
+		}
+	}
+	return { emit: changeListenable.emit, listen }
+}
+
+// @TODO: this interface is very rough and not well thought out.
+export const observe = (key: string, onChange: () => void) => {
+	const { listen } = createListener(key)
+	listen(onChange)
+}
 
 export const useStorageBackedState = <T>(
 	initialValue: T | (() => T),
@@ -71,30 +98,16 @@ export const useStorageBackedState = <T>(
 				set: (newValue) => storage.setItem(key, JSON.stringify(newValue)),
 			}
 		})()
-		const changeListenable: ChangeListenable = (() => {
-			if (key === null) {
-				return listenable()
-			}
-			const result = changeListenables.get(key) ?? listenable()
-			changeListenables.set(key, result)
-			return result
-		})()
-		const listen = (onChange: () => void) => {
-			changeListenable.addListener(onChange)
-			window.addEventListener('storage', onChange)
-			return () => {
-				changeListenable.removeListener(onChange)
-				window.removeEventListener('storage', onChange)
-			}
-		}
+		const { emit, listen } = createListener(key)
 		const set = (newValue: T) => {
 			core.set(newValue)
-			changeListenable.emit()
+			emit()
 		}
 		return { get: core.get, set, listen }
 	}, [key, storage, trulyInitialValue, inMemoryStorage])
 	const subscribe = useCallback(
-		(onStoreChange: () => void) => internalStorage.listen(onStoreChange),
+		(onStoreChange: () => void) =>
+			internalStorage.listen(onStoreChange).unsubscribe,
 		[internalStorage],
 	)
 	const getSnapshot = useCallback(
