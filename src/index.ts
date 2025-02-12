@@ -42,6 +42,15 @@ export const observe = (key: string, onChange: () => void) => {
 	listen(onChange)
 }
 
+// @TODO: hook to listenable so the new value is broadcasted
+export const setStorageBackedValue = (
+	key: string,
+	newValue: unknown,
+	storage: Storage = localStorage,
+) => {
+	storage.setItem(key, JSON.stringify(newValue))
+}
+
 export const useStorageBackedState = <T>(
 	initialValue: T | (() => T),
 	key: string | null = null,
