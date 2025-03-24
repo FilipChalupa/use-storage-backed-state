@@ -51,6 +51,14 @@ export const setStorageBackedValue = (
 	storage.setItem(key, JSON.stringify(newValue))
 }
 
+// @TODO: hook to listenable so the removal is broadcasted
+export const removeStorageBackedValue = (
+	key: string,
+	storage: Storage = localStorage,
+) => {
+	storage.removeItem(key)
+}
+
 export const useStorageBackedState = <T>(
 	initialValue: T | (() => T),
 	key: string | null = null,
