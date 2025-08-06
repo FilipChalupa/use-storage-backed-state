@@ -2,6 +2,8 @@ type Key = string
 type Storage = globalThis.Storage | null
 const defaultStorage = 'localStorage' in globalThis ? localStorage : null
 
+// @TODO: make default value optional
+
 export const defaultParse = <Value>(value: string) => {
 	// @TODO
 	return JSON.parse(value) as Value
@@ -26,15 +28,15 @@ export const setStorageBackedValue = <Value>({
 
 export const getStorageBackedValue = <Value>({
 	key,
-	defaultValue = null,
+	defaultValue,
 	storage = defaultStorage,
 	parse = defaultParse,
 }: {
 	key: Key
-	defaultValue?: Value | null
+	defaultValue: Value
 	storage?: Storage
 	parse?: (value: string) => Value
-}): Value | null /* @TODO: don't allow null if defaultValue is set */ => {
+}): Value => {
 	// @TODO
 	return defaultValue
 }
@@ -51,12 +53,12 @@ export const removeStorageBackedValue = ({
 
 export const subscribeStorageBackedValue = <Value>({
 	key,
-	defaultValue = null,
+	defaultValue,
 	storage = defaultStorage,
 	parse = defaultParse,
 }: {
 	key: Key
-	defaultValue?: Value | null
+	defaultValue: Value
 	storage?: Storage
 	parse?: (value: string) => Value
 }) => {
@@ -69,13 +71,13 @@ export const subscribeStorageBackedValue = <Value>({
 
 export const useStorageBackedState = <Value>({
 	key,
-	defaultValue = null,
+	defaultValue,
 	storage = defaultStorage,
 	parse = defaultParse,
 	stringify = defaultStringify,
 }: {
 	key: Key
-	defaultValue?: Value | null
+	defaultValue: Value
 	storage?: Storage
 	parse?: (value: string) => Value
 	stringify?: (value: Value) => string
@@ -85,13 +87,13 @@ export const useStorageBackedState = <Value>({
 
 export const storageBackedState = <Value>({
 	key,
-	defaultValue = null,
+	defaultValue,
 	storage = defaultStorage,
 	parse = defaultParse,
 	stringify = defaultStringify,
 }: {
 	key: Key
-	defaultValue?: Value | null
+	defaultValue: Value
 	storage?: Storage
 	parse?: (value: string) => Value
 	stringify?: (value: Value) => string
