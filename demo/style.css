@@ -12,3 +12,9 @@ output {
 	font-weight: 700;
 	font-size: 1.5em;
 }
+
+textarea {
+	width: 100%;
+	min-height: 10em;
+	resize: vertical;
+}

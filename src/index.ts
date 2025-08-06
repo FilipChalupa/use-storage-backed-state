@@ -22,6 +22,7 @@ const runtimeBroadcastChannels = new Map<
 	Storage,
 	Map<Key, Set<(value: string | null) => void>>
 >()
+const valueCache = new Map<Storage, Map<Key, { value: unknown }>>()
 
 const broadcastRuntimeNewValue = (
 	key: Key,
@@ -41,11 +42,15 @@ const subscribeNewValue = (
 	onChange: (value: string | null) => void,
 	storage: Storage,
 ) => {
+	const onChangeInternal = (value: string | null) => {
+		valueCache.get(storage)?.delete(key)
+		onChange(value)
+	}
 	const handleStorageChange = (event: StorageEvent) => {
 		if (event.storageArea !== storage || event.key !== key) {
 			return
 		}
-		onChange(event.newValue)
+		onChangeInternal(event.newValue)
 	}
 	if (storage !== null) {
 		window.addEventListener('storage', handleStorageChange)
@@ -57,12 +62,12 @@ const subscribeNewValue = (
 	const byKeyChannels =
 		byStorageChannels.get(key) ?? new Set<(value: string | null) => void>()
 	byStorageChannels.set(key, byKeyChannels)
-	byKeyChannels.add(onChange)
+	byKeyChannels.add(onChangeInternal)
 
 	const unsubscribe = () => {
 		if (storage !== null) {
 			window.removeEventListener('storage', handleStorageChange)
-			runtimeBroadcastChannels.get(storage)?.get(key)?.delete(onChange)
+			runtimeBroadcastChannels.get(storage)?.get(key)?.delete(onChangeInternal)
 		}
 	}
 	return { unsubscribe }
@@ -90,7 +95,6 @@ export const setStorageBackedValue = <Value>({
 
 export const getStorageBackedValue = (() => {
 	const alreadyWarnedAboutMalformedData = new Map<Key, string>()
-	const cache = new Map<Storage, Map<Key, { value: unknown }>>()
 	return <Value>({
 		key,
 		defaultValue,
@@ -102,7 +106,7 @@ export const getStorageBackedValue = (() => {
 		storage?: Storage
 		parse?: (value: string) => Value
 	}): Value => {
-		const cachedValue = cache.get(storage)?.get(key)
+		const cachedValue = valueCache.get(storage)?.get(key)
 		if (cachedValue) {
 			return cachedValue?.value as Value
 		}
@@ -127,8 +131,8 @@ export const getStorageBackedValue = (() => {
 		})()
 
 		const cacheByStorage =
-			cache.get(storage) ?? new Map<Key, { value: unknown }>()
-		cache.set(storage, cacheByStorage)
+			valueCache.get(storage) ?? new Map<Key, { value: unknown }>()
+		valueCache.set(storage, cacheByStorage)
 		cacheByStorage.set(key, { value })
 
 		return value

@@ -1,5 +1,6 @@
 import type { FunctionComponent } from 'react'
 import { Counter } from './Counter'
+import { FastFingers } from './FastFingers'
 import { Sliders } from './Sliders'
 import { Tabs } from './Tabs'
 
@@ -23,6 +24,7 @@ export const App: FunctionComponent = () => {
 			<Counter />
 			<Tabs />
 			<Sliders />
+			<FastFingers />
 		</>
 	)
 }
