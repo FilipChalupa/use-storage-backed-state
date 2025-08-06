@@ -5,7 +5,6 @@ const defaultStorage = 'localStorage' in globalThis ? localStorage : null
 // @TODO: make default value optional
 
 export const defaultParse = <Value>(value: string) => {
-	// @TODO
 	return JSON.parse(value) as Value
 }
 export const defaultStringify = <Value>(value: Value) => {
