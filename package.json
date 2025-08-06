@@ -6,9 +6,12 @@
 	"module": "./dist/index.es.js",
 	"types": "./dist/index.d.ts",
 	"scripts": {
-		"start": "rollup --configPlugin typescript -c -w",
-		"build": "rollup --configPlugin typescript -c",
-		"dev": "npm start",
+		"dev": "npm run demo:start",
+		"package:start": "rollup --configPlugin typescript -c -w",
+		"package:build": "rollup --configPlugin typescript -c",
+		"demo:start": "vite",
+		"demo:build": "vite build",
+		"build": "npm run package:build",
 		"prepare": "npm run build"
 	},
 	"repository": {
@@ -35,13 +38,15 @@
 		"@rollup/plugin-node-resolve": "^10.0.0",
 		"@rollup/plugin-typescript": "^11.0.0",
 		"@types/react": "^18.2.38",
+		"@vitejs/plugin-react": "^4.7.0",
 		"prettier": "^3.3.3",
 		"react": "^18.2.0",
 		"rollup": "^3.10.0",
 		"rollup-plugin-delete": "^2.0.0",
 		"rollup-plugin-peer-deps-external": "^2.2.4",
 		"rollup-plugin-typescript2": "^0.29.0",
-		"typescript": "^5.3.3"
+		"typescript": "^5.3.3",
+		"vite": "^7.0.6"
 	},
 	"peerDependencies": {
 		"react": "18 || 19"
