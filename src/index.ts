@@ -113,7 +113,7 @@ export const getStorageBackedValue = (() => {
 			if (alreadyWarnedAboutMalformedData.get(key) !== rawValue) {
 				alreadyWarnedAboutMalformedData.set(key, rawValue)
 				console.error(
-					`Malformed storage data for key ${key}. Falling back to defaultValue. Malformed data: ${rawValue}`,
+					`Malformed storage data for key ${key}. Falling back to defaultValue.\n${error}`,
 				)
 			}
 			return defaultValue
@@ -173,9 +173,16 @@ export const useStorageBackedState = <Value>({
 	key: Key
 	defaultValue: Value | (() => Value)
 	storage?: Storage
-	parse?: (value: string) => Value
-	stringify?: (value: Value) => string
-}) => {
+} & (
+	| {
+			parse?: undefined
+			stringify?: undefined
+	  }
+	| {
+			parse: (value: string) => Value
+			stringify: (value: Value) => string
+	  }
+)) => {
 	const evaluatedInitialValue = useMemo(
 		() =>
 			defaultValue instanceof Function
@@ -237,9 +244,16 @@ export const storageBackedState = <Value>({
 	key: Key
 	defaultValue: Value
 	storage?: Storage
-	parse?: (value: string) => Value
-	stringify?: (value: Value) => string
-}) => {
+} & (
+	| {
+			parse?: undefined
+			stringify?: undefined
+	  }
+	| {
+			parse: (value: string) => Value
+			stringify: (value: Value) => string
+	  }
+)) => {
 	return {
 		use: () =>
 			useStorageBackedState({ key, storage, defaultValue, parse, stringify }),
