@@ -1,6 +1,6 @@
 # useStorageBackedState [![npm](https://img.shields.io/npm/v/use-storage-backed-state.svg)](https://www.npmjs.com/package/use-storage-backed-state) ![npm type definitions](https://img.shields.io/npm/types/use-storage-backed-state.svg)
 
-Custom React hook for storage backed persisted state. Check interactive [demo](https://codesandbox.io/p/sandbox/use-storage-backed-state-8skmqm?file=%2Fsrc%2FApp.js).
+Custom React hook for storage backed persisted state. Check interactive [demo](http://filipchalupa.cz/use-storage-backed-state/).
 
 ## Installation
 
