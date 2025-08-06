@@ -1,5 +1,5 @@
 import type { FunctionComponent } from 'react'
-import { useStorageBackedState } from '../../src'
+import { useStorageBackedState } from '../../src/legacy'
 
 export const Counter: FunctionComponent = () => {
 	const [count, setCount] = useStorageBackedState(0, 'count')
