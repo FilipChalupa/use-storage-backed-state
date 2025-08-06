@@ -8,9 +8,4 @@ export default defineConfig({
 		emptyOutDir: true,
 	},
 	plugins: [react()],
-	resolve: {
-		alias: {
-			'use-storage-backed-state': '../src/index',
-		},
-	},
 })
