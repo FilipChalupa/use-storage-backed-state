@@ -90,6 +90,7 @@ export const setStorageBackedValue = <Value>({
 
 export const getStorageBackedValue = (() => {
 	const alreadyWarnedAboutMalformedData = new Map<Key, string>()
+	const cache = new Map<Storage, Map<Key, { value: unknown }>>()
 	return <Value>({
 		key,
 		defaultValue,
@@ -101,23 +102,36 @@ export const getStorageBackedValue = (() => {
 		storage?: Storage
 		parse?: (value: string) => Value
 	}): Value => {
-		const rawValue = storage
-			? storage.getItem(key)
-			: (runtimeStorage.get(key) ?? null)
-		if (rawValue === null) {
-			return defaultValue
+		const cachedValue = cache.get(storage)?.get(key)
+		if (cachedValue) {
+			return cachedValue?.value as Value
 		}
-		try {
-			return parse(rawValue)
-		} catch (error) {
-			if (alreadyWarnedAboutMalformedData.get(key) !== rawValue) {
-				alreadyWarnedAboutMalformedData.set(key, rawValue)
-				console.error(
-					`Malformed storage data for key ${key}. Falling back to defaultValue.\n${error}`,
-				)
+		const value = (() => {
+			const rawValue = storage
+				? storage.getItem(key)
+				: (runtimeStorage.get(key) ?? null)
+			if (rawValue === null) {
+				return defaultValue
 			}
-			return defaultValue
-		}
+			try {
+				return parse(rawValue)
+			} catch (error) {
+				if (alreadyWarnedAboutMalformedData.get(key) !== rawValue) {
+					alreadyWarnedAboutMalformedData.set(key, rawValue)
+					console.error(
+						`Malformed storage data for key ${key}. Falling back to defaultValue.\n${error}`,
+					)
+				}
+				return defaultValue
+			}
+		})()
+
+		const cacheByStorage =
+			cache.get(storage) ?? new Map<Key, { value: unknown }>()
+		cache.set(storage, cacheByStorage)
+		cacheByStorage.set(key, { value })
+
+		return value
 	}
 })()
 
