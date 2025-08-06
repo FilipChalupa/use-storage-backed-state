@@ -3,7 +3,7 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
 	root: 'demo',
-	base: 'use-storage-backed-state/',
+	base: '/use-storage-backed-state/',
 	build: {
 		outDir: '../demo-dist',
 		emptyOutDir: true,
