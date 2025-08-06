@@ -5,6 +5,7 @@
 	"main": "./dist/index.js",
 	"module": "./dist/index.es.js",
 	"types": "./dist/index.d.ts",
+	"type": "module",
 	"scripts": {
 		"dev": "npm run demo:start",
 		"package:start": "rollup --configPlugin typescript -c -w",
