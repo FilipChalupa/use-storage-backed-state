@@ -37,13 +37,6 @@ export const Counter: FunctionComponent = () => {
 				}}
 			>
 				reset 🛑
-			</button>{' '}
-			<button
-				onClick={() => {
-					window.location.reload()
-				}}
-			>
-				reload page 🔃
 			</button>
 		</section>
 	)
