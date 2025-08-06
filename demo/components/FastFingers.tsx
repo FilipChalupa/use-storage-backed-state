@@ -1,59 +1,65 @@
-import { useMemo, type FunctionComponent } from 'react'
+import { useMemo, useRef, type FunctionComponent } from 'react'
 import { useStorageBackedState } from '../../src'
 
 export const FastFingers: FunctionComponent = () => {
-	const [keyStrokes, setKeyStrokes] = useStorageBackedState<
-		Array<{
-			character: string
-			timestamp: number
-		}>
-	>({
+	const [keyStrokes, setKeyStrokes] = useStorageBackedState<null | {
+		text: string
+		firstStrokeTimestamp: number
+		lastStrokeTimestamp: number
+	}>({
 		key: 'fast-fingers',
-		defaultValue: [],
+		defaultValue: null,
 	})
 
 	const characterPerMinute = useMemo(() => {
-		const first = keyStrokes.at(0)
-		const last = keyStrokes.at(-1)
-		if (!first || !last || first === last) {
-			return keyStrokes.length
+		if (!keyStrokes) {
+			return null
+		}
+		if (keyStrokes.firstStrokeTimestamp === keyStrokes.lastStrokeTimestamp) {
+			return 1
 		}
 		return Math.ceil(
-			keyStrokes.length / ((last.timestamp - first.timestamp) / 1000 / 60),
+			keyStrokes.text.length /
+				((keyStrokes.lastStrokeTimestamp - keyStrokes.firstStrokeTimestamp) /
+					1000 /
+					60),
 		)
 	}, [keyStrokes])
+
+	const ref = useRef<HTMLTextAreaElement>(null)
 
 	return (
 		<section>
 			<h2>Fast fingers</h2>
 			<p>
-				Characters per minute: <output>{characterPerMinute}</output>
+				Characters per minute:{' '}
+				<output>{characterPerMinute ?? 'start typing'}</output>
 			</p>
 			<textarea
+				ref={ref}
 				placeholder="Type fast to increment the counter"
-				value={keyStrokes.map(({ character }) => character).join('')}
+				value={keyStrokes?.text ?? ''}
 				onChange={(event) => {
-					const value = event.target.value
 					setKeyStrokes((previous) => {
-						const characters = value.split('')
-						const newStrokes: typeof previous = []
-						let matches = true
 						const now = Date.now()
-						characters.forEach((character, index) => {
-							const current = matches ? previous.at(index) : undefined
-							matches = matches && !current
-							newStrokes.push(
-								current ?? {
-									character,
-									timestamp: now,
-								},
-							)
-						})
-						return newStrokes
+						return {
+							text: event.target.value,
+							firstStrokeTimestamp: previous
+								? previous.firstStrokeTimestamp
+								: now,
+							lastStrokeTimestamp: now,
+						}
 					})
 				}}
 			/>
-			<button onClick={() => setKeyStrokes([])}>Reset</button>
+			<button
+				onClick={() => {
+					setKeyStrokes(null)
+					ref.current?.focus()
+				}}
+			>
+				Reset
+			</button>
 		</section>
 	)
 }
