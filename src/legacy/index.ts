@@ -37,12 +37,14 @@ const createListener = (key: null | string) => {
 }
 
 // @TODO: this interface is very rough and not well thought out.
+/** @deprecated */
 export const observe = (key: string, onChange: () => void) => {
 	const { listen } = createListener(key)
 	listen(onChange)
 }
 
 // @TODO: hook to listenable so the new value is broadcasted
+/** @deprecated */
 export const setStorageBackedValue = (
 	key: string,
 	newValue: unknown,
@@ -52,6 +54,7 @@ export const setStorageBackedValue = (
 }
 
 // @TODO: hook to listenable so the removal is broadcasted
+/** @deprecated */
 export const removeStorageBackedValue = (
 	key: string,
 	storage: Storage = localStorage,
@@ -59,6 +62,7 @@ export const removeStorageBackedValue = (
 	storage.removeItem(key)
 }
 
+/** @deprecated */
 export const useStorageBackedState = <T>(
 	initialValue: T | (() => T),
 	key: string | null = null,
