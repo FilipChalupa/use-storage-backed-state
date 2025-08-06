@@ -1,9 +1,11 @@
 import type { FunctionComponent } from 'react'
-import { useStorageBackedState } from '../../src/'
+import { removeStorageBackedValue, useStorageBackedState } from '../../src/'
+
+const key = 'counter'
 
 export const Counter: FunctionComponent = () => {
 	const [count, setCount] = useStorageBackedState({
-		key: 'counter',
+		key,
 		defaultValue: 0,
 	})
 
@@ -26,6 +28,15 @@ export const Counter: FunctionComponent = () => {
 				}}
 			>
 				decrement ➖
+			</button>{' '}
+			<button
+				onClick={() => {
+					removeStorageBackedValue({
+						key,
+					})
+				}}
+			>
+				reset 🛑
 			</button>{' '}
 			<button
 				onClick={() => {
