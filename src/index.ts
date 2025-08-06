@@ -3,6 +3,7 @@ type Key = string
 type Storage = globalThis.Storage | null
 const defaultStorage = 'localStorage' in globalThis ? localStorage : null
 
+// @TODO: maybe when transitioning from localStorage to in-memory storage, use last stored value
 // @TODO: make default value optional
 
 const runtimeStorage = new Map<Key, string>()
