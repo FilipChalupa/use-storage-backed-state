@@ -12,6 +12,7 @@ const defaultStorage = 'localStorage' in globalThis ? localStorage : null
 
 // @TODO: maybe when transitioning from localStorage to in-memory storage, use last stored value
 // @TODO: make default value optional
+// @TODO: add JSDOC with examples
 
 const runtimeStorage = new Map<Key, string>()
 
@@ -269,6 +270,7 @@ export const useStorageBackedState = <Value>({
 	return [value, setValue] as const
 }
 
+/** @experimental */
 export const storageBackedState = <Value>({
 	key,
 	defaultValue,
