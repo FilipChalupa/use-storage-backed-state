@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useRef, useSyncExternalStore } from 'react'
+
 type Key = string
 type Storage = globalThis.Storage | null
 const defaultStorage = 'localStorage' in globalThis ? localStorage : null
@@ -217,7 +218,7 @@ export const useStorageBackedState = <Value>({
 				parse,
 				onChange: onStoreChange,
 			}).unsubscribe,
-		[],
+		[key, evaluatedInitialValue, storage, parse],
 	)
 	const getSnapshot = useCallback(
 		() =>
@@ -227,9 +228,12 @@ export const useStorageBackedState = <Value>({
 				storage,
 				parse,
 			}),
-		[],
+		[key, evaluatedInitialValue, storage, parse],
 	)
-	const getServerSnapshot = useCallback(() => evaluatedInitialValue, [])
+	const getServerSnapshot = useCallback(
+		() => evaluatedInitialValue,
+		[evaluatedInitialValue],
+	)
 
 	const value = useSyncExternalStore<Value>(
 		subscribe,

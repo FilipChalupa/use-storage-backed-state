@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type FunctionComponent } from 'react'
+import { type FunctionComponent, useMemo, useRef, useState } from 'react'
 import { useStorageBackedState } from '../../src'
 
 export const FastFingers: FunctionComponent = () => {
@@ -74,6 +74,7 @@ export const FastFingers: FunctionComponent = () => {
 				<option value="none">no storage</option>
 			</select>{' '}
 			<button
+				type="button"
 				onClick={() => {
 					setKeyStrokes(null)
 					ref.current?.focus()

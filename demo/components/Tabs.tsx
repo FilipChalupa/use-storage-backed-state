@@ -28,6 +28,7 @@ export const Tabs: FunctionComponent = () => {
 			</p>
 			{tabs.map((tab) => (
 				<button
+					type="button"
 					key={tab}
 					onClick={() => {
 						setActiveTab(tab)

@@ -14,6 +14,7 @@ export const App: FunctionComponent = () => {
 				getting synchronized or try to reload the page to see the state
 				persisting.{' '}
 				<button
+					type="button"
 					onClick={() => {
 						window.location.reload()
 					}}

@@ -16,6 +16,7 @@ export const Counter: FunctionComponent = () => {
 				Value: <output>{count}</output>
 			</p>
 			<button
+				type="button"
 				onClick={() => {
 					setCount(count + 1)
 				}}
@@ -23,6 +24,7 @@ export const Counter: FunctionComponent = () => {
 				increment ➕
 			</button>{' '}
 			<button
+				type="button"
 				onClick={() => {
 					setCount(count - 1)
 				}}
@@ -30,6 +32,7 @@ export const Counter: FunctionComponent = () => {
 				decrement ➖
 			</button>{' '}
 			<button
+				type="button"
 				onClick={() => {
 					removeStorageBackedValue({
 						key,
