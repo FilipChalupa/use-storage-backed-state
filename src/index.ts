@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useSyncExternalStore } from 'react'
+import { useCallback, useId, useMemo, useRef, useSyncExternalStore } from 'react'
 
 type Key = string
 type Storage = globalThis.Storage | null
@@ -185,11 +185,11 @@ export const subscribeStorageBackedValue = <Value>({
 export const useStorageBackedState = <Value>({
 	key,
 	defaultValue,
-	storage = defaultStorage,
+	storage,
 	parse = defaultParse,
 	stringify = defaultStringify,
 }: {
-	key: Key
+	key: Key | null
 	defaultValue: Value | (() => Value)
 	storage?: Storage
 } & (
@@ -202,6 +202,10 @@ export const useStorageBackedState = <Value>({
 			stringify: (value: Value) => string
 	  }
 )) => {
+	const fallbackKey = useId()
+	const evaluatedKey = key ?? fallbackKey
+	const evaluatedStorage = key === null ? null : storage ?? defaultStorage
+
 	const evaluatedInitialValue = useMemo(
 		() =>
 			defaultValue instanceof Function
@@ -212,23 +216,23 @@ export const useStorageBackedState = <Value>({
 	const subscribe = useCallback(
 		(onStoreChange: () => void) =>
 			subscribeStorageBackedValue({
-				key,
+				key: evaluatedKey,
 				defaultValue: evaluatedInitialValue,
-				storage,
+				storage: evaluatedStorage,
 				parse,
 				onChange: onStoreChange,
 			}).unsubscribe,
-		[key, evaluatedInitialValue, storage, parse],
+		[evaluatedKey, evaluatedInitialValue, evaluatedStorage, parse],
 	)
 	const getSnapshot = useCallback(
 		() =>
 			getStorageBackedValue({
-				key,
+				key: evaluatedKey,
 				defaultValue: evaluatedInitialValue,
-				storage,
+				storage: evaluatedStorage,
 				parse,
 			}),
-		[key, evaluatedInitialValue, storage, parse],
+		[evaluatedKey, evaluatedInitialValue, evaluatedStorage, parse],
 	)
 	const getServerSnapshot = useCallback(
 		() => evaluatedInitialValue,
@@ -245,10 +249,10 @@ export const useStorageBackedState = <Value>({
 	valueRef.current = value
 	const setValue = (newValue: Value | ((oldValue: Value) => Value)) => {
 		setStorageBackedValue({
-			key,
+			key: evaluatedKey,
 			value:
 				newValue instanceof Function ? newValue(valueRef.current) : newValue,
-			storage,
+			storage: evaluatedStorage,
 			stringify,
 		})
 	}

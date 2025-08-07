@@ -3,7 +3,7 @@ import { useStorageBackedState } from '../../src'
 
 export const FastFingers: FunctionComponent = () => {
 	const [key, setKey] = useState<
-		'fast-fingers' | 'slow-stubs' | 'lazy-pinkies'
+		'fast-fingers' | 'slow-stubs' | 'lazy-pinkies' | 'none'
 	>('fast-fingers')
 	const [storage, setStorage] = useState<
 		'localStorage' | 'sessionStorage' | 'none'
@@ -13,7 +13,7 @@ export const FastFingers: FunctionComponent = () => {
 		firstStrokeTimestamp: number
 		lastStrokeTimestamp: number
 	}>({
-		key,
+		key: key === 'none' ? null : key,
 		defaultValue: null,
 		storage:
 			storage === 'localStorage'
@@ -98,6 +98,7 @@ export const FastFingers: FunctionComponent = () => {
 					<option value="fast-fingers">fast-fingers</option>
 					<option value="slow-stubs">slow-stubs</option>
 					<option value="lazy-pinkies">lazy-pinkies</option>
+					<option value="none">no key</option>
 				</select>
 			</label>{' '}
 			<button
