@@ -8,6 +8,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "npm run demo:start",
+		"check": "biome check",
 		"package:start": "rollup --configPlugin typescript -c -w",
 		"package:build": "rollup --configPlugin typescript -c",
 		"demo:start": "vite",
@@ -35,13 +36,13 @@
 		"custom-listenable": "^0.2.1"
 	},
 	"devDependencies": {
+		"@biomejs/biome": "2.1.3",
 		"@rollup/plugin-commonjs": "^16.0.0",
 		"@rollup/plugin-node-resolve": "^10.0.0",
 		"@rollup/plugin-typescript": "^11.0.0",
 		"@types/react": "^18.3.23",
 		"@types/react-dom": "^18.3.7",
 		"@vitejs/plugin-react": "^4.7.0",
-		"prettier": "^3.3.3",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
 		"rollup": "^3.10.0",
