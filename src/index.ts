@@ -1,4 +1,10 @@
-import { useCallback, useId, useMemo, useRef, useSyncExternalStore } from 'react'
+import {
+	useCallback,
+	useId,
+	useMemo,
+	useRef,
+	useSyncExternalStore,
+} from 'react'
 
 type Key = string
 type Storage = globalThis.Storage | null
@@ -204,7 +210,7 @@ export const useStorageBackedState = <Value>({
 )) => {
 	const fallbackKey = useId()
 	const evaluatedKey = key ?? fallbackKey
-	const evaluatedStorage = key === null ? null : storage ?? defaultStorage
+	const evaluatedStorage = key === null ? null : (storage ?? defaultStorage)
 
 	const evaluatedInitialValue = useMemo(
 		() =>
@@ -247,15 +253,18 @@ export const useStorageBackedState = <Value>({
 
 	const valueRef = useRef(value)
 	valueRef.current = value
-	const setValue = useCallback((newValue: Value | ((oldValue: Value) => Value)) => {
-		setStorageBackedValue({
-			key: evaluatedKey,
-			value:
-				newValue instanceof Function ? newValue(valueRef.current) : newValue,
-			storage: evaluatedStorage,
-			stringify,
-		})
-	}, [evaluatedKey, evaluatedStorage, stringify])
+	const setValue = useCallback(
+		(newValue: Value | ((oldValue: Value) => Value)) => {
+			setStorageBackedValue({
+				key: evaluatedKey,
+				value:
+					newValue instanceof Function ? newValue(valueRef.current) : newValue,
+				storage: evaluatedStorage,
+				stringify,
+			})
+		},
+		[evaluatedKey, evaluatedStorage, stringify],
+	)
 
 	return [value, setValue] as const
 }
