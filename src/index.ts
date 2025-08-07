@@ -247,7 +247,7 @@ export const useStorageBackedState = <Value>({
 
 	const valueRef = useRef(value)
 	valueRef.current = value
-	const setValue = (newValue: Value | ((oldValue: Value) => Value)) => {
+	const setValue = useCallback((newValue: Value | ((oldValue: Value) => Value)) => {
 		setStorageBackedValue({
 			key: evaluatedKey,
 			value:
@@ -255,7 +255,7 @@ export const useStorageBackedState = <Value>({
 			storage: evaluatedStorage,
 			stringify,
 		})
-	}
+	}, [evaluatedKey, evaluatedStorage, stringify])
 
 	return [value, setValue] as const
 }
