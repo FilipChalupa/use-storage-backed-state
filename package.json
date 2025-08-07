@@ -8,6 +8,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "npm run demo:start",
+		"lint": "eslint src demo",
 		"package:start": "rollup --configPlugin typescript -c -w",
 		"package:build": "rollup --configPlugin typescript -c",
 		"demo:start": "vite",
@@ -35,12 +36,17 @@
 		"custom-listenable": "^0.2.1"
 	},
 	"devDependencies": {
+		"@eslint/js": "^9.32.0",
 		"@rollup/plugin-commonjs": "^16.0.0",
 		"@rollup/plugin-node-resolve": "^10.0.0",
 		"@rollup/plugin-typescript": "^11.0.0",
 		"@types/react": "^18.3.23",
 		"@types/react-dom": "^18.3.7",
 		"@vitejs/plugin-react": "^4.7.0",
+		"eslint": "^9.32.0",
+		"eslint-plugin-react": "^7.37.5",
+		"globals": "^16.3.0",
+		"jiti": "^2.5.1",
 		"prettier": "^3.3.3",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
@@ -49,6 +55,7 @@
 		"rollup-plugin-peer-deps-external": "^2.2.4",
 		"rollup-plugin-typescript2": "^0.29.0",
 		"typescript": "^5.3.3",
+		"typescript-eslint": "^8.39.0",
 		"vite": "^7.0.6"
 	},
 	"peerDependencies": {
