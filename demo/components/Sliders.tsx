@@ -8,14 +8,13 @@ const slider = storageBackedState({
 
 export const Sliders: FunctionComponent = () => {
 	return (
-		<section>
-			<h2>Sliders</h2>
+		<>
 			<p>Example with hook used more than once on the same page.</p>
 			<Value />
 			<Slider accentColor="red" widthMultiplier={1} />
 			<Slider accentColor="green" widthMultiplier={1.5} />
 			<Slider accentColor="blue" widthMultiplier={2} />
-		</section>
+		</>
 	)
 }
 

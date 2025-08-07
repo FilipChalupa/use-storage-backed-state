@@ -1,4 +1,4 @@
-import type { FunctionComponent } from 'react'
+import type { FunctionComponent, PropsWithChildren } from 'react'
 import { Counter } from './Counter'
 import { FastFingers } from './FastFingers'
 import { Sliders } from './Sliders'
@@ -22,10 +22,40 @@ export const App: FunctionComponent = () => {
 					reload page 🔃
 				</button>
 			</p>
-			<Counter />
-			<Tabs />
-			<Sliders />
-			<FastFingers />
+			<Example title="Counter" fileName="Counter">
+				<Counter />
+			</Example>
+			<Example title="Tabs" fileName="Tabs">
+				<Tabs />
+			</Example>
+			<Example title="Sliders" fileName="Sliders">
+				<Sliders />
+			</Example>
+			<Example title="Fast fingers" fileName="FastFingers">
+				<FastFingers />
+			</Example>
 		</>
+	)
+}
+
+const Example: FunctionComponent<
+	PropsWithChildren<{
+		title: string
+		fileName: string
+	}>
+> = ({ title, fileName, children }) => {
+	return (
+		<section>
+			<h2>
+				{title} (
+				<a
+					href={`https://github.com/FilipChalupa/use-storage-backed-state/blob/main/demo/components/${fileName}.tsx`}
+				>
+					code
+				</a>
+				)
+			</h2>
+			{children}
+		</section>
 	)
 }

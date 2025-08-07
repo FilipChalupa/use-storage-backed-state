@@ -10,8 +10,7 @@ export const Counter: FunctionComponent = () => {
 	})
 
 	return (
-		<section>
-			<h2>Counter</h2>
+		<>
 			<p>
 				Value: <output>{count}</output>
 			</p>
@@ -41,6 +40,6 @@ export const Counter: FunctionComponent = () => {
 			>
 				reset 🛑
 			</button>
-		</section>
+		</>
 	)
 }

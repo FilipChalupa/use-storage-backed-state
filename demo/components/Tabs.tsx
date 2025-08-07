@@ -20,8 +20,7 @@ export const Tabs: FunctionComponent = () => {
 	})
 
 	return (
-		<section>
-			<h2>Tabs</h2>
+		<>
 			<p>
 				Example with custom <code>stringify</code> and <code>parse</code>{' '}
 				functions.
@@ -41,6 +40,6 @@ export const Tabs: FunctionComponent = () => {
 					{tab}
 				</button>
 			))}
-		</section>
+		</>
 	)
 }

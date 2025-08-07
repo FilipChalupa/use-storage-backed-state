@@ -41,8 +41,7 @@ export const FastFingers: FunctionComponent = () => {
 	const ref = useRef<HTMLTextAreaElement>(null)
 
 	return (
-		<section>
-			<h2>Fast fingers</h2>
+		<>
 			<p>
 				Example with <code>key</code> and <code>storage</code> changed on the
 				fly.
@@ -110,6 +109,6 @@ export const FastFingers: FunctionComponent = () => {
 			>
 				Reset
 			</button>
-		</section>
+		</>
 	)
 }
