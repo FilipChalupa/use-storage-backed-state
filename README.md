@@ -1,6 +1,8 @@
 # useStorageBackedState [![npm](https://img.shields.io/npm/v/use-storage-backed-state.svg)](https://www.npmjs.com/package/use-storage-backed-state) ![npm type definitions](https://img.shields.io/npm/types/use-storage-backed-state.svg)
 
-Custom React hook for storage backed persisted state. Check interactive [demo](http://filipchalupa.cz/use-storage-backed-state/).
+Custom React hook for state management like `useState` but persisted to `localStorage`. Check interactive [demo](http://filipchalupa.cz/use-storage-backed-state/).
+
+![example](https://raw.githubusercontent.com/FilipChalupa/use-storage-backed-state/HEAD/screencast.gif)
 
 ## Installation
 
@@ -15,9 +17,10 @@ import React from 'react'
 import { useStorageBackedState } from 'use-storage-backed-state'
 
 export const MyComponent = () => {
-	// 0: initialState
-	// 'count': localStorage key
-	const [count, setCount] = useStorageBackedState(0, 'count')
+	const [count, setCount] = useStorageBackedState({
+		key: 'count',
+		defaultValue: 0,
+	})
 
 	return (
 		<section>
@@ -43,8 +46,6 @@ export const MyComponent = () => {
 }
 ```
 
-![example](https://raw.githubusercontent.com/FilipChalupa/use-storage-backed-state/HEAD/screencast.gif)
-
 ## Notes
 
 - Stores data in `localStorage`.
@@ -52,21 +53,20 @@ export const MyComponent = () => {
 - Works with `sessionStorage` too.
 
   ```jsx
-  useStorageBackedState(…, …, sessionStorage)
+  useStorageBackedState({
+  	// …
+  	storage: sessionStorage
+  })
   ```
 
 - Realtime synchronization between multiple uses with the same `key`. Even across tabs.
 
-- You can opt out from storage and synchronization by passing `null` as the second argument or by omitting the `key` altogether. `useStorageBackedState` will then behave similarly like `useState` in that case.
+- You can opt out from storage and synchronization by passing `null` to `storage` option.
 
   ```jsx
-  const [count, setCount] = useStorageBackedState(1)
-  ```
-
-  ```jsx
-  const [storeState, setStoreState] = useState(false)
-  const [count, setCount] = useStorageBackedState(
-  	1,
-  	storeState ? 'count' : null,
-  )
+  const [count, setCount] = useStorageBackedState({
+		key: 'local-count',
+		initialValue: 1,
+		storage: null
+	})
   ```
