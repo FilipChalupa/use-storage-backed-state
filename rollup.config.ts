@@ -20,6 +20,6 @@ export default {
 			sourcemap: true,
 		},
 	],
-	external: ['react', 'custom-listenable'],
+	external: ['react'],
 	plugins: [del({ targets: path.parse(packageJson.main).dir + '/*' }), peerDepsExternal(), resolve(), commonjs(), typescript()],
 }

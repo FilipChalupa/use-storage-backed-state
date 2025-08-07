@@ -32,9 +32,6 @@
 		"url": "https://www.npmjs.com/~onset"
 	},
 	"license": "ISC",
-	"dependencies": {
-		"custom-listenable": "^0.2.1"
-	},
 	"devDependencies": {
 		"@biomejs/biome": "2.1.3",
 		"@rollup/plugin-commonjs": "^16.0.0",
