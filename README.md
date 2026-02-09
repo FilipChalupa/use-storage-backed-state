@@ -55,7 +55,7 @@ export const MyComponent = () => {
   ```jsx
   useStorageBackedState({
   	// …
-  	storage: sessionStorage
+  	storage: sessionStorage,
   })
   ```
 
@@ -65,8 +65,69 @@ export const MyComponent = () => {
 
   ```jsx
   const [count, setCount] = useStorageBackedState({
-		key: 'local-count',
-		initialValue: 1,
-		storage: null
-	})
+  	key: 'local-count',
+  	initialValue: 1,
+  	storage: null,
+  })
   ```
+
+## Advanced Usage
+
+### Custom parser and serializer
+
+By default, `use-storage-backed-state` uses `JSON.stringify` and `JSON.parse` to handle values. You can provide your own functions to handle custom data types, like `Date` objects.
+
+```jsx
+const [date, setDate] = useStorageBackedState({
+	key: 'my-date',
+	defaultValue: new Date(),
+	parse: (value) => new Date(value),
+	stringify: (value) => value.toISOString(),
+})
+```
+
+### Usage outside of React component
+
+You can also get, set, and remove values from outside of a React component.
+
+```jsx
+import {
+	getStorageBackedValue,
+	setStorageBackedValue,
+	removeStorageBackedValue,
+} from 'use-storage-backed-state'
+
+// Set a value
+setStorageBackedValue({ key: 'my-key', value: 'my-value' })
+
+// Get a value
+const value = getStorageBackedValue({ key: 'my-key', defaultValue: 'default' })
+
+// Remove a value
+removeStorageBackedValue({ key: 'my-key' })
+```
+
+### Subscribing to changes
+
+You can subscribe to changes of a value. This is useful for integrating with other libraries like `rxjs`.
+
+```jsx
+import { subscribeStorageBackedValue } from 'use-storage-backed-state'
+import { Observable } from 'rxjs'
+
+const myValue$ = new Observable((subscriber) => {
+	const { unsubscribe } = subscribeStorageBackedValue({
+		key: 'my-key',
+		defaultValue: 'default',
+		onChange: (value) => {
+			subscriber.next(value)
+		},
+	})
+
+	return unsubscribe
+})
+
+myValue$.subscribe((value) => {
+	console.log('Value changed:', value)
+})
+```
